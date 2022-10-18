@@ -1,5 +1,11 @@
 #pragma once
 
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Attributes.h"
+#include "llvm/IR/Verifier.h"
+
 class ParseContext;
 class Symbol;
 
@@ -8,22 +14,25 @@ class Symbol;
   yy::parser::symbol_type yylex(ParseContext& pc)
 YY_DECL;
 
-class LiteralSymbolData
+struct LiteralSymbolData
 {
-public:
 	std::string value;
 };
 
-class Symbol
+struct ProcedureSymbolData
 {
-public:
+	llvm::Function* function;
+};
+
+struct Symbol
+{
 	Symbol(const std::string& name):
 		name(name)
 	{}
 
-public:
 	const std::string name;
-	std::variant<LiteralSymbolData> data;
+	std::unique_ptr<LiteralSymbolData> literal;
+	std::unique_ptr<ProcedureSymbolData> procedure;
 };
 
 class SymbolTable
@@ -55,11 +64,18 @@ public:
 
 	void pushScope();
 	void popScope();
-	bool pushLiteral(std::shared_ptr<Symbol>& symbol);
+	void pushLiteral(std::shared_ptr<Symbol>& symbol);
+
+	void pushProcedure(std::shared_ptr<Symbol>& symbol);
+	Symbol* getToplevelProcedure();
 
 public:
 	yy::location location;
 	std::shared_ptr<SymbolTable> scope;
+	std::deque<std::shared_ptr<Symbol>> procedures;
+	llvm::LLVMContext llvm;
+	llvm::IRBuilder<> irbuilder;
+	std::unique_ptr<llvm::Module> module;
 };
 
 class Scanner

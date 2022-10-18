@@ -1,11 +1,14 @@
 CXX = g++
+LLVM_CONFIG = llvm-config
 
 CXXFLAGS = -Os -g \
 	-I src \
 	-I $(OBJDIR)/src \
+	-I $(shell $(LLVM_CONFIG) --includedir) \
 
 LDFLAGS = \
-	-lfmt
+	-lfmt \
+	$(shell $(LLVM_CONFIG) --libs) \
 
 OBJDIR = .obj
 
@@ -40,7 +43,10 @@ $(OBJDIR)/%.lex.cc $(OBJDIR)/%.lex.h: %.l
 clean:
 	rm -rf $(OBJDIR) plmc
 
+src/main.cc: $(OBJDIR)/src/parser.tab.h
+src/parsecontext.cc: $(OBJDIR)/src/parser.tab.h
 $(OBJDIR)/src/parser.tab.cc: $(OBJDIR)/src/lexer.lex.h
+#$(OBJDIR)/src/lexer.lex.cc: $(OBJDIR)/src/parser.tab.h
 
 -include $(patsubst %.o,%.d,$(OBJS))
 

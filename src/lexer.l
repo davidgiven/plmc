@@ -114,7 +114,9 @@ xor             { return parser::make_XOR(loc); }
 
 {ID}            {
                     auto s = pc.scope->maybeFind(yytext);
-                    if (!s || !pc.pushLiteral(s))
+                    if (s && s->literal)
+                        pc.pushLiteral(s);
+                    else
                         return parser::make_IDENT(yytext, loc);
                 }
                     
@@ -142,20 +144,14 @@ Scanner::~Scanner()
 {
 }
 
-bool ParseContext::pushLiteral(std::shared_ptr<Symbol>& symbol)
+void ParseContext::pushLiteral(std::shared_ptr<Symbol>& symbol)
 {
-	auto* data = std::get_if<LiteralSymbolData>(&symbol->data);
-	if (data)
-	{
-        /* yy_scan_string switches to the new buffer, which we don't want. */
+    /* yy_scan_string switches to the new buffer, which we don't want. */
 
-        auto currentBuffer = YY_CURRENT_BUFFER;
-        auto newBuffer = yy_scan_string(data->value.c_str());
-        yy_switch_to_buffer(currentBuffer);
-        yypush_buffer_state(newBuffer);
-		return true;
-	}
-	return false;
+    auto currentBuffer = YY_CURRENT_BUFFER;
+    auto newBuffer = yy_scan_string(symbol->literal->value.c_str());
+    yy_switch_to_buffer(currentBuffer);
+    yypush_buffer_state(newBuffer);
 }
 
 // vim: sw=4 ts=4 et

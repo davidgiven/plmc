@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <variant>
+#include <deque>
 
 template <typename... T>
 void Error(fmt::format_string<T...> fmt, T&&... args)

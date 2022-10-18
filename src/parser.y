@@ -39,7 +39,7 @@
 %token STRUCTURE THEN TO WHILE WORD QWORD XOR
 
 %type <std::string> IDENT;
-%type <long long> NUMBER;
+%type <int64_t> NUMBER;
 %type <std::string> STRING;
 %type <std::shared_ptr<Symbol>> new-ident;
 %type <std::shared_ptr<Symbol>> old-ident;
@@ -47,7 +47,16 @@
 %%
 
 module
-	: new-ident COLON simple-do-block
+	: new-ident COLON 
+		{
+			pc.pushProcedure($1);
+			auto* ft = llvm::FunctionType::get(
+				llvm::Type::getVoidTy(pc.llvm), {}, false);
+			$1->procedure->function = llvm::Function::Create(
+				ft, llvm::Function::ExternalLinkage,
+				$1->name, *pc.module);
+		}
+		simple-do-block
 	;
 
 /* --- Primitives -------------------------------------------------------- */
@@ -71,7 +80,7 @@ ignored-ident
 	;
 
 simple-do-block
-	: DO SEMI block end
+	: DO SEMI 
 		{ pc.pushScope(); }
 		block end
 		{ pc.popScope(); }
@@ -79,6 +88,7 @@ simple-do-block
 
 end
 	: END ignored-ident SEMI
+	| END SEMI
 	;
 
 /* --- Program structure ------------------------------------------------- */
@@ -152,8 +162,8 @@ return-statement
 declaration-body
 	: new-ident LITERALLY STRING
 		{
-			auto& data = std::get<LiteralSymbolData>($1->data);
-			data.value = $3;
+			$1->literal = std::make_unique<LiteralSymbolData>();
+			$1->literal->value = $3;
 		}
 	| new-ident type-name optional-data
 	;

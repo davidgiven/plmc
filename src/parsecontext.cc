@@ -9,9 +9,11 @@ std::shared_ptr<SymbolTable> SymbolTable::getNextScope()
     return _next;
 }
 
-ParseContext::ParseContext()
+ParseContext::ParseContext():
+	irbuilder(llvm)
 {
 	scope = std::make_shared<SymbolTable>();
+	module = std::make_unique<llvm::Module>("PL/M Module", llvm);
 }
 
 void ParseContext::parse(const std::string& filename)
@@ -41,7 +43,7 @@ std::shared_ptr<Symbol> SymbolTable::maybeFind(const std::string& name)
 	if (it == _symbols.end())
 	{
 		if (_next)
-			return _next->find(name);
+			return _next->maybeFind(name);
 		return nullptr;
 	}
 	return it->second;
@@ -63,5 +65,16 @@ void ParseContext::pushScope()
 void ParseContext::popScope()
 {
     scope = scope->getNextScope();
+}
+
+void ParseContext::pushProcedure(std::shared_ptr<Symbol>& symbol)
+{
+	symbol->procedure = std::make_unique<ProcedureSymbolData>();
+	procedures.push_back(symbol);
+}
+
+Symbol* ParseContext::getToplevelProcedure()
+{
+	return procedures.front().get();
 }
 
