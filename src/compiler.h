@@ -31,12 +31,12 @@ struct Symbol
     std::unique_ptr<ProcedureSymbolData> procedure;
 };
 
-class SymbolTable
+class Scope
 {
 public:
-    SymbolTable(std::shared_ptr<SymbolTable> next = nullptr);
+    Scope(std::shared_ptr<Scope> next = nullptr);
 
-    std::shared_ptr<SymbolTable> getNextScope();
+    std::shared_ptr<Scope> getNextScope();
 
     std::shared_ptr<Symbol> add(const std::string& name);
     std::shared_ptr<Symbol> maybeFind(const std::string& name);
@@ -44,7 +44,7 @@ public:
 
 private:
     std::map<std::string, std::shared_ptr<Symbol>> _symbols;
-    std::shared_ptr<SymbolTable> _next;
+    std::shared_ptr<Scope> _next;
 };
 
 extern void Parse(const std::string& filename);
@@ -58,7 +58,7 @@ extern void PushProcedure(std::shared_ptr<Symbol>& symbol);
 extern Symbol* GetToplevelProcedure();
 
 extern yy::location location;
-extern std::shared_ptr<SymbolTable> scope;
+extern std::shared_ptr<Scope> scope;
 extern std::deque<std::shared_ptr<Symbol>> procedures;
 extern llvm::LLVMContext llvmContext;
 extern llvm::IRBuilder<> irbuilder;

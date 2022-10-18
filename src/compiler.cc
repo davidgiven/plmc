@@ -3,20 +3,20 @@
 #include <stdio.h>
 
 yy::location location;
-std::shared_ptr<SymbolTable> scope = std::make_shared<SymbolTable>();
+std::shared_ptr<Scope> scope = std::make_shared<Scope>();
 std::deque<std::shared_ptr<Symbol>> procedures;
 llvm::LLVMContext llvmContext;
 llvm::IRBuilder<> irbuilder(llvmContext);
 std::unique_ptr<llvm::Module> module;
 
-SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> next): _next(next) {}
+Scope::Scope(std::shared_ptr<Scope> next): _next(next) {}
 
-std::shared_ptr<SymbolTable> SymbolTable::getNextScope()
+std::shared_ptr<Scope> Scope::getNextScope()
 {
     return _next;
 }
 
-std::shared_ptr<Symbol> SymbolTable::add(const std::string& name)
+std::shared_ptr<Symbol> Scope::add(const std::string& name)
 {
 	auto it = _symbols.find(name);
 	if (it != _symbols.end())
@@ -27,7 +27,7 @@ std::shared_ptr<Symbol> SymbolTable::add(const std::string& name)
 	return s;
 }
 
-std::shared_ptr<Symbol> SymbolTable::maybeFind(const std::string& name)
+std::shared_ptr<Symbol> Scope::maybeFind(const std::string& name)
 {
 	auto it = _symbols.find(name);
 	if (it == _symbols.end())
@@ -39,7 +39,7 @@ std::shared_ptr<Symbol> SymbolTable::maybeFind(const std::string& name)
 	return it->second;
 }
 
-std::shared_ptr<Symbol> SymbolTable::find(const std::string& name)
+std::shared_ptr<Symbol> Scope::find(const std::string& name)
 {
 	auto s = maybeFind(name);
 	if (!s)
@@ -57,7 +57,7 @@ void Parse(const std::string& filename)
 
 void PushScope()
 {
-	scope = std::make_shared<SymbolTable>(scope);
+	scope = std::make_shared<Scope>(scope);
 }
 
 void PopScope()
