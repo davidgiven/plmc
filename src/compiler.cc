@@ -1,29 +1,19 @@
 #include "globals.h"
-#include "parsecontext.h"
+#include "compiler.h"
 #include <stdio.h>
+
+yy::location location;
+std::shared_ptr<SymbolTable> scope = std::make_shared<SymbolTable>();
+std::deque<std::shared_ptr<Symbol>> procedures;
+llvm::LLVMContext llvmContext;
+llvm::IRBuilder<> irbuilder(llvmContext);
+std::unique_ptr<llvm::Module> module;
 
 SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> next): _next(next) {}
 
 std::shared_ptr<SymbolTable> SymbolTable::getNextScope()
 {
     return _next;
-}
-
-ParseContext::ParseContext():
-	irbuilder(llvm)
-{
-	scope = std::make_shared<SymbolTable>();
-	module = std::make_unique<llvm::Module>("PL/M Module", llvm);
-}
-
-void ParseContext::parse(const std::string& filename)
-{
-    location.initialize(&filename);
-
-    Scanner scanner(filename);
-    yy::parser parse(*this);
-    parse.set_debug_level(1);
-    int res = parse();
 }
 
 std::shared_ptr<Symbol> SymbolTable::add(const std::string& name)
@@ -57,23 +47,31 @@ std::shared_ptr<Symbol> SymbolTable::find(const std::string& name)
 	return s;
 }
 
-void ParseContext::pushScope()
+void Parse(const std::string& filename)
+{
+	IncludeFile(filename);
+    yy::parser parser;
+    parser.set_debug_level(1);
+    int res = parser();
+}
+
+void PushScope()
 {
 	scope = std::make_shared<SymbolTable>(scope);
 }
 
-void ParseContext::popScope()
+void PopScope()
 {
     scope = scope->getNextScope();
 }
 
-void ParseContext::pushProcedure(std::shared_ptr<Symbol>& symbol)
+void PushProcedure(std::shared_ptr<Symbol>& symbol)
 {
 	symbol->procedure = std::make_unique<ProcedureSymbolData>();
 	procedures.push_back(symbol);
 }
 
-Symbol* ParseContext::getToplevelProcedure()
+Symbol* GetToplevelProcedure()
 {
 	return procedures.front().get();
 }

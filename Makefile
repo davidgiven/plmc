@@ -14,7 +14,7 @@ OBJDIR = .obj
 
 SRCS = \
 	src/main.cc \
-	src/parsecontext.cc \
+	src/compiler.cc \
 
 OBJS := $(patsubst %.cc, $(OBJDIR)/%.o, $(SRCS)) \
 	$(OBJDIR)/src/parser.tab.o \

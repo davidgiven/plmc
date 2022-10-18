@@ -1,13 +1,11 @@
 #include "globals.h"
-#include "parsecontext.h"
+#include "compiler.h"
 
 int main(int argc, const char* argv[])
 {
-	ParseContext pc;
-
-	pc.parse(argv[1]);
-	llvm::verifyFunction(*pc.getToplevelProcedure()->procedure->function);
+	Parse(argv[1]);
+	llvm::verifyFunction(*GetToplevelProcedure()->procedure->function);
 	fmt::print("\nBeginning dump:\n");
-	pc.module->dump();
+	module->dump();
 }
 

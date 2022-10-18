@@ -1,6 +1,6 @@
 %{
 #include "globals.h"
-#include "parsecontext.h"
+#include "compiler.h"
 
 %}
 
@@ -12,7 +12,6 @@
 %define api.value.type variant
 %define parse.assert
 %define api.token.prefix {T_}
-%param { ParseContext& pc }
 %locations
 %define parse.trace
 %define parse.error detailed
@@ -49,12 +48,13 @@
 module
 	: new-ident COLON 
 		{
-			pc.pushProcedure($1);
+			module = std::make_unique<llvm::Module>("PL/M Module", llvmContext);
+			PushProcedure($1);
 			auto* ft = llvm::FunctionType::get(
-				llvm::Type::getVoidTy(pc.llvm), {}, false);
+				llvm::Type::getVoidTy(llvmContext), {}, false);
 			$1->procedure->function = llvm::Function::Create(
 				ft, llvm::Function::ExternalLinkage,
-				$1->name, *pc.module);
+				$1->name, *module);
 		}
 		simple-do-block
 	;
@@ -63,12 +63,12 @@ module
 
 new-ident
 	: IDENT
-		{ $$ = pc.scope->add($1); }
+		{ $$ = scope->add($1); }
 	;
 
 old-ident
 	: IDENT
-		{ $$ = pc.scope->find($1); }
+		{ $$ = scope->find($1); }
 	;
 
 label-ident
@@ -81,9 +81,9 @@ ignored-ident
 
 simple-do-block
 	: DO SEMI 
-		{ pc.pushScope(); }
+		{ PushScope(); }
 		block end
-		{ pc.popScope(); }
+		{ PopScope(); }
 	;
 
 end
@@ -118,10 +118,10 @@ declaration-bodies
 
 procedure-definition
 	: new-ident COLON PROCEDURE 
-		{ pc.pushScope(); }
+		{ PushScope(); }
 	  optional-procedure-parameters
 	  SEMI block end
-	    { pc.popScope(); }
+	    { PopScope(); }
 	;
 	
 optional-procedure-parameters
