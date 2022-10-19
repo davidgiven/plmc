@@ -53,11 +53,17 @@ ID          [A-Za-z_*][A-Za-z0-9_$]*
 "*"             { return parser::make_STAR(location); }
 "+"             { return parser::make_PLUS(location); }
 ","             { return parser::make_COMMA(location); }
+"-"             { return parser::make_MINUS(location); }
 "/"             { return parser::make_SLASH(location); }
 ":"             { return parser::make_COLON(location); }
 ":="            { return parser::make_ASSIGN(location); }
 ";"             { return parser::make_SEMI(location); }
+"<"             { return parser::make_LESSTHAN(location); }
+"<="            { return parser::make_LESSTHANOREQUALS(location); }
+"<>"            { return parser::make_NOTEQUALS(location); }
 "="             { return parser::make_EQUALS(location); }
+">"             { return parser::make_GREATERTHAN(location); }
+">="            { return parser::make_GREATERTHANOREQUALS(location); }
 
 address         { return parser::make_ADDRESS(location); }
 and             { return parser::make_AND(location); }

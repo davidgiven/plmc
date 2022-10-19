@@ -28,7 +28,6 @@ struct LiteralSymbolData
 struct ProcedureSymbolData
 {
     llvm::Function* llvm;
-	llvm::BasicBlock* block;
 };
 
 struct VariableSymbolData
@@ -75,13 +74,10 @@ extern void StartScanning(const std::string& filename);
 extern void StopScanning();
 extern void PushScope();
 extern void PopScope();
-extern void PushBlock(llvm::BasicBlock* block);
-extern void PopBlock();
 extern void PushLiteral(std::shared_ptr<Symbol>& symbol);
 extern void PushProcedure(std::shared_ptr<Symbol>& symbol);
 extern Symbol* GetToplevelProcedure();
 extern Symbol* GetCurrentProcedure();
-extern llvm::BasicBlock* GetCurrentBlock();
 
 extern yy::location location;
 extern std::shared_ptr<Scope> scope;

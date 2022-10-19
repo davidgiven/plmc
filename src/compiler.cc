@@ -9,7 +9,6 @@ std::unique_ptr<llvm::Module> module;
 llvm::IRBuilder<> irbuilder(llvmContext);
 
 static std::deque<std::shared_ptr<Symbol>> procedures;
-static std::deque<llvm::BasicBlock*> blocks;
 
 Scope::Scope(std::shared_ptr<Scope> next): _next(next) {}
 
@@ -81,23 +80,5 @@ Symbol* GetToplevelProcedure()
 Symbol* GetCurrentProcedure()
 {
 	return procedures.back().get();
-}
-
-void PushBlock(llvm::BasicBlock* block)
-{
-	blocks.push_back(block);
-	irbuilder.SetInsertPoint(block);
-}
-
-void PopBlock()
-{
-	blocks.pop_back();
-	if (!blocks.empty())
-		irbuilder.SetInsertPoint(GetCurrentBlock());
-}
-	
-llvm::BasicBlock* GetCurrentBlock()
-{
-	return blocks.back();
 }
 
