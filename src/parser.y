@@ -306,7 +306,7 @@ iterative-while-statement
 			irbuilder.SetInsertPoint($1.condBlock);
 
 			irbuilder.CreateCondBr(
-				irbuilder.CreateICmpEQ(
+				irbuilder.CreateICmpUGT(
 					irbuilder.CreateLoad($1.lvalue->type->llvm, $1.lvalue->value),
 					$1.target->value
 				),
