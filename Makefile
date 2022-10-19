@@ -45,6 +45,7 @@ clean:
 
 src/main.cc: $(OBJDIR)/src/parser.tab.h
 src/parsecontext.cc: $(OBJDIR)/src/parser.tab.h
+src/compiler.cc: $(OBJDIR)/src/parser.tab.h
 $(OBJDIR)/src/parser.tab.cc: $(OBJDIR)/src/lexer.lex.h
 #$(OBJDIR)/src/lexer.lex.cc: $(OBJDIR)/src/parser.tab.h
 

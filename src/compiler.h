@@ -7,10 +7,18 @@
 #include "llvm/IR/Verifier.h"
 
 class Symbol;
+class Type;
+class Node;
 
 #include "parser.tab.h"
 #define YY_DECL yy::parser::symbol_type yylex()
 YY_DECL;
+
+struct Type
+{
+	llvm::Type* llvm;
+	unsigned width;
+};
 
 struct LiteralSymbolData
 {
@@ -19,7 +27,14 @@ struct LiteralSymbolData
 
 struct ProcedureSymbolData
 {
-    llvm::Function* function;
+    llvm::Function* llvm;
+	llvm::BasicBlock* block;
+};
+
+struct VariableSymbolData
+{
+	llvm::Constant* llvm;
+	std::shared_ptr<Type> type;
 };
 
 struct Symbol
@@ -29,6 +44,13 @@ struct Symbol
     const std::string name;
     std::unique_ptr<LiteralSymbolData> literal;
     std::unique_ptr<ProcedureSymbolData> procedure;
+	std::unique_ptr<VariableSymbolData> variable;
+};
+
+struct Node
+{
+	std::shared_ptr<Type> type;
+	llvm::Value* value;
 };
 
 class Scope
@@ -53,13 +75,16 @@ extern void StartScanning(const std::string& filename);
 extern void StopScanning();
 extern void PushScope();
 extern void PopScope();
+extern void PushBlock(llvm::BasicBlock* block);
+extern void PopBlock();
 extern void PushLiteral(std::shared_ptr<Symbol>& symbol);
 extern void PushProcedure(std::shared_ptr<Symbol>& symbol);
 extern Symbol* GetToplevelProcedure();
+extern Symbol* GetCurrentProcedure();
+extern llvm::BasicBlock* GetCurrentBlock();
 
 extern yy::location location;
 extern std::shared_ptr<Scope> scope;
-extern std::deque<std::shared_ptr<Symbol>> procedures;
-extern llvm::LLVMContext llvmContext;
 extern llvm::IRBuilder<> irbuilder;
+extern llvm::LLVMContext llvmContext;
 extern std::unique_ptr<llvm::Module> module;

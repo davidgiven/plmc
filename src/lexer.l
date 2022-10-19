@@ -19,7 +19,6 @@ static std::stringstream stringAccumulator;
 %option noyywrap caseless nounput noinput batch debug
 
 BLANK       [ \r\t\f]
-DIGIT       [0-9]
 ID          [A-Za-z_*][A-Za-z0-9_$]*
 
 %x COMMENT
@@ -47,17 +46,18 @@ ID          [A-Za-z_*][A-Za-z0-9_$]*
 <STRING>[^"\\]+ { stringAccumulator << yytext; }
 <STRING>"\""    { BEGIN(INITIAL); return parser::make_STRING(stringAccumulator.str(), location); }
 
-{DIGIT}+    {
-            printf( "An integer: %s (%d)\n", yytext,
-                    atoi( yytext ) );
-            }
+[0-9][0-9a-f$]*[boqdh]? { return make_NUMBER(yytext, location); }
 
-";"             { return parser::make_SEMI(location); }
-":"             { return parser::make_COLON(location); }
-":="            { return parser::make_ASSIGN(location); }
-","             { return parser::make_COMMA(location); }
 "("             { return parser::make_OPENPAREN(location); }
 ")"             { return parser::make_CLOSEPAREN(location); }
+"*"             { return parser::make_STAR(location); }
+"+"             { return parser::make_PLUS(location); }
+","             { return parser::make_COMMA(location); }
+"/"             { return parser::make_SLASH(location); }
+":"             { return parser::make_COLON(location); }
+":="            { return parser::make_ASSIGN(location); }
+";"             { return parser::make_SEMI(location); }
+"="             { return parser::make_EQUALS(location); }
 
 address         { return parser::make_ADDRESS(location); }
 and             { return parser::make_AND(location); }
@@ -119,6 +119,7 @@ xor             { return parser::make_XOR(location); }
                         return parser::make_IDENT(yytext, location);
                 }
                     
+.               { Error("unparseable character '{}'", yytext); }
 %%
 
 static yy::parser::symbol_type make_NUMBER
